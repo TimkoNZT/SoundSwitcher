@@ -9,10 +9,3 @@ The program does not require installation and does not leave traces in the syste
 The OK button saves the configuration. The Refresh button updates the list of devices.
 
 WBR!
-
-
-[Changes_history]
-1.1 Релиз
-1.2 Добавлены стили
-1.3 Сохранение всех настроек в реестр. Отдельная лайт версия без стилей.
-	
