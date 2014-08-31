@@ -214,6 +214,7 @@ implementation
 
 {$R *.dfm}
 
+
 procedure TfrmMain.btnApplyClick(Sender: TObject);
 begin
 ApplySound;

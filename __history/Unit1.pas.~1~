@@ -163,6 +163,7 @@ type
     procedure Combo_Source2Change(Sender: TObject);
     procedure Combo_Source1Change(Sender: TObject);
     procedure mnuDevicesClick(Sender: TObject);
+    procedure FormPaint(Sender: TObject);
     procedure WMQUERYENDSESSION(var Msg: TMessage); message WM_QUERYENDSESSION;
   private
     function LoadSettings(): Boolean;
@@ -213,6 +214,7 @@ var
 implementation
 
 {$R *.dfm}
+
 
 procedure TfrmMain.btnApplyClick(Sender: TObject);
 begin
@@ -288,11 +290,13 @@ procedure TfrmMain.FormCreate(Sender: TObject);
 var i: Integer;
 begin
 try
-	With TStyleManager.Create do begin
-		for i := 0 to Length(StyleNames)-1 do
-    		cmbStyles.Items.Add(StyleNames[i]);
+// Нужен модуль Vcl.Styles.Fixes для XE2
+//TStyleManager.Engine.RegisterStyleHook(TButton, TButtonStyleHookFix);
+With TStyleManager.Create do begin
+for i := 0 to Length(StyleNames)-1 do
+    cmbStyles.Items.Add(StyleNames[i]);
 end;
-	cmbStyles.ItemIndex:=0;
+cmbStyles.ItemIndex:=0;
 finally end;
 
 Button_Find_SoundClick(nil);
@@ -300,6 +304,13 @@ if not LoadSettings then
   ShowBalloon(msgErr1_loc[intLocale], TBalloonFlags.bfError)
 else
   ApplySound;
+end;
+
+procedure TfrmMain.FormPaint(Sender: TObject);
+begin
+//Темы меняют размер клиентской области, поэтому держим её постоянной.
+//////frmMain.ClientHeight:=cFrmClientHeight;
+//Тупая была идея                                   :(
 end;
 
 procedure TfrmMain.mnuSwitchClick(Sender: TObject);
@@ -433,78 +444,76 @@ end;
 result:= true;
 end;
 
-{$REGION 'OldCode'}
-    {function TfrmMain.LoadSettings(): Boolean;
-    var Reg:TRegistry;
-    begin
-    Reg := TRegistry.Create;
-         Reg.RootKey := HKEY_CURRENT_USER;
-         Reg.OpenKey('\SOFTWARE\Microsoft\Windows\CurrentVersion\Run',false);
-         chkAutorun.Checked:= Reg.ValueExists(APPNAME);
-         Reg.Free;
+{function TfrmMain.LoadSettings(): Boolean;
+var Reg:TRegistry;
+begin
+Reg := TRegistry.Create;
+     Reg.RootKey := HKEY_CURRENT_USER;
+     Reg.OpenKey('\SOFTWARE\Microsoft\Windows\CurrentVersion\Run',false);
+     chkAutorun.Checked:= Reg.ValueExists(APPNAME);
+     Reg.Free;
 
-    if not FileExists(ExtractFilePath(ParamStr(0)) + 'Config.ini') then begin
-      Result:= False;
+if not FileExists(ExtractFilePath(ParamStr(0)) + 'Config.ini') then begin
+  Result:= False;
+  Exit;
+end;
+With TIniFile.Create(ExtractFilePath(ParamStr(0)) + 'Config.ini') do
+  begin
+  intLocale:= ReadInteger('Main', 'Locale', 0);
+  cmbLocale.ItemIndex:=intLocale;
+  SetLocalisation;
+  chkVerbose.Checked:= ReadBool('Main', 'NoMsg', false);
+  cmbStyles.ItemIndex:= ReadInteger('Main', 'Style', 0);
+  cmbStylesChange(nil);
+  Combo_Source1.ItemIndex:= ReadInteger('Main', 'ChSp', 0);
+  Combo_Source2.ItemIndex:= ReadInteger('Main', 'ChHp', 1);
+  if ReadInteger('Main', 'DefCh', 0) = 0 then
+       radSpeakers.Checked:=True
+  else radHeadphones.Checked:=True;
+
+  Free;
+  end;
+  if (Combo_Source1.ItemIndex <0) or
+     (Combo_Source2.ItemIndex <0) then
+       result:= false
+  else result:= true
+end; }
+
+{function TfrmMain.SaveSettings(): Boolean;
+var Reg:TRegistry;
+begin
+if (Combo_Source1.ItemIndex <0) or
+   (Combo_Source2.ItemIndex <0) then begin
+      result:=false;
       Exit;
-    end;
-    With TIniFile.Create(ExtractFilePath(ParamStr(0)) + 'Config.ini') do
-      begin
-      intLocale:= ReadInteger('Main', 'Locale', 0);
-      cmbLocale.ItemIndex:=intLocale;
-      SetLocalisation;
-      chkVerbose.Checked:= ReadBool('Main', 'NoMsg', false);
-      cmbStyles.ItemIndex:= ReadInteger('Main', 'Style', 0);
-      cmbStylesChange(nil);
-      Combo_Source1.ItemIndex:= ReadInteger('Main', 'ChSp', 0);
-      Combo_Source2.ItemIndex:= ReadInteger('Main', 'ChHp', 1);
-      if ReadInteger('Main', 'DefCh', 0) = 0 then
-           radSpeakers.Checked:=True
-      else radHeadphones.Checked:=True;
-
-      Free;
-      end;
-      if (Combo_Source1.ItemIndex <0) or
-         (Combo_Source2.ItemIndex <0) then
-           result:= false
-      else result:= true
-    end; }
-
-    {function TfrmMain.SaveSettings(): Boolean;
-    var Reg:TRegistry;
-    begin
-    if (Combo_Source1.ItemIndex <0) or
-       (Combo_Source2.ItemIndex <0) then begin
-          result:=false;
-          Exit;
-    end;
-    if chkAutorun.Checked then begin
-         Reg := TRegistry.Create;
-         Reg.RootKey := HKEY_CURRENT_USER;
-         Reg.OpenKey('\SOFTWARE\Microsoft\Windows\CurrentVersion\Run', false);
-         Reg.WriteString(APPNAME, Application.ExeName);
-         Reg.Free;
-         //ShowBalloon('Автозагрузка включена', bfInfo);
-    end else begin
-         Reg := TRegistry.Create;
-         Reg.RootKey := HKEY_CURRENT_USER;
-         Reg.OpenKey('\SOFTWARE\Microsoft\Windows\CurrentVersion\Run',false);
-         Reg.DeleteValue(APPNAME);
-         Reg.Free;
-         //ShowBalloon('Автозагрузка отключена', bfInfo);
-    end;
-    with TIniFile.Create(ExtractFilePath(ParamStr(0)) + 'Config.ini') do begin
-      WriteInteger('Main', 'ChSp', Combo_Source1.ItemIndex);
-      WriteInteger('Main', 'ChHp', Combo_Source2.ItemIndex);
-      if radSpeakers.Checked then WriteInteger('Main', 'DefCh', 0)
-      else WriteInteger('Main', 'DefCh', 1);
-      WriteInteger('Main', 'Locale', intLocale);
-      WriteBool('Main', 'NoMsg', chkVerbose.Checked);
-      WriteInteger('Main', 'Style', cmbStyles.ItemIndex);
-      Free;
-    end;
-    result:= true;
-    end;}
-{$ENDREGION}
+end;
+if chkAutorun.Checked then begin
+     Reg := TRegistry.Create;
+     Reg.RootKey := HKEY_CURRENT_USER;
+     Reg.OpenKey('\SOFTWARE\Microsoft\Windows\CurrentVersion\Run', false);
+     Reg.WriteString(APPNAME, Application.ExeName);
+     Reg.Free;
+     //ShowBalloon('Автозагрузка включена', bfInfo);
+end else begin
+     Reg := TRegistry.Create;
+     Reg.RootKey := HKEY_CURRENT_USER;
+     Reg.OpenKey('\SOFTWARE\Microsoft\Windows\CurrentVersion\Run',false);
+     Reg.DeleteValue(APPNAME);
+     Reg.Free;
+     //ShowBalloon('Автозагрузка отключена', bfInfo);
+end;
+with TIniFile.Create(ExtractFilePath(ParamStr(0)) + 'Config.ini') do begin
+  WriteInteger('Main', 'ChSp', Combo_Source1.ItemIndex);
+  WriteInteger('Main', 'ChHp', Combo_Source2.ItemIndex);
+  if radSpeakers.Checked then WriteInteger('Main', 'DefCh', 0)
+  else WriteInteger('Main', 'DefCh', 1);
+  WriteInteger('Main', 'Locale', intLocale);
+  WriteBool('Main', 'NoMsg', chkVerbose.Checked);
+  WriteInteger('Main', 'Style', cmbStyles.ItemIndex);
+  Free;
+end;
+result:= true;
+end;}
 /////////////////////////////////////////////////////////////////Settings_End///
 
 procedure TfrmMain.SetLocalisation();
@@ -533,6 +542,7 @@ var
   Def_Dev_Ch:IPolicyConfig;
   Id_Dev:PWideChar;
   DevUName: String;
+  //ID_Dev_Def:WideString;
 begin
 
 if (Combo_Source1.ItemIndex <0) or

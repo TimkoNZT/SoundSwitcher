@@ -163,6 +163,7 @@ type
     procedure Combo_Source2Change(Sender: TObject);
     procedure Combo_Source1Change(Sender: TObject);
     procedure mnuDevicesClick(Sender: TObject);
+    procedure FormPaint(Sender: TObject);
     procedure WMQUERYENDSESSION(var Msg: TMessage); message WM_QUERYENDSESSION;
   private
     function LoadSettings(): Boolean;
@@ -213,6 +214,7 @@ var
 implementation
 
 {$R *.dfm}
+
 
 procedure TfrmMain.btnApplyClick(Sender: TObject);
 begin
