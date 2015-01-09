@@ -179,7 +179,7 @@ var
   intLocale: Integer = 0;
   frmMain: TfrmMain;
   const APPNAME: PWideChar = 'SoundSwitcher';
-  const cURL ='https://cloud.mail.ru/public/86bec0d1c420/SoundSwitcher';
+  const cURL ='https://github.com/Mrgnstrn/SoundSwitcher/releases';
   const cFrmClientHeight: Integer = 118;
 
   mnuQuit_loc: array [0..1] of String = ('Quit', 'Выход');
@@ -199,13 +199,13 @@ var
   msgInfo1_loc: array [0..1] of String = ('Settings are saved', 'Настройки сохранены');
   msgInfo2_loc: array [0..1] of String = ('Switched to ', 'Переключено на ');
   msgAbout_loc: array [0..1] of String = ('SoundSwitcher v %s'+ chr(13) +
-                                          'Author: Sadikov Timur (vk/id1669165)' + chr(13) +
+                                          'Author: Nazarov Timur (www.vk.com/id1669165)' + chr(13) +
                                           'Last updates on:'+chr(13) +
                                           cURL + chr(13) +
                                           'OK - open link'
                                           ,
                                           'SoundSwitcher v %s' + chr(13) +
-                                          'Автор: Садыков Тимур (vk/id1669165)' + chr(13) +
+                                          'Автор: Назаров Тимур (www.vk.com/id1669165)' + chr(13) +
                                           'Последние обновления лежат по адресу:' + chr(13) +
                                           cURL + chr(13) +
                                           'OK - открыть ссылку' );
@@ -318,7 +318,7 @@ begin
 //if MessageBox(Application.Handle, PwideChar(Format(msgAbout_loc[intLocale],[GetMyVersion])), APPNAME,
 //MB_OKCANCEL + MB_ICONINFORMATION + MB_DEFBUTTON2)= IDOK then
 //ShellExecute(Handle, 'open', PChar(cURL), nil, nil, SW_SHOW);
-if MessageDLG( PwideChar(Format(msgAbout_loc[intLocale],[GetMyVersion])), mtInformation, [mbOK, mbCancel], 0 ) = mrOK then
+if MessageDLG(PwideChar(Format(msgAbout_loc[intLocale],[GetMyVersion])), mtInformation, [mbOK, mbCancel], 0 ) = mrOK then
 ShellExecute(Handle, 'open', PChar(cURL), nil, nil, SW_SHOW);
 end;
 
